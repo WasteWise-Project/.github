@@ -105,26 +105,32 @@ FastAPI Python microservice with three domains:
 
 **WasteWise** is developed as a Graduation Project at **Haliç University, Department of Computer Engineering**.
 
+<div align="center">
 <table>
   <tr>
     <td align="center">
-      <a href="https://github.com/glory42">
-        <img src="https://github.com/glory42.png?size=100" width="100px;" alt=""/><br />
-        <sub><b>Görkem Karyol</b></sub>
-      </a><br />
-      Full Stack Web & Server Infrastructure<br />
-      <i>(Frontend, Backend, IoT Support)</i>
+      <div align="center">
+        <a href="https://github.com/glory42">
+          <img src="https://github.com/glory42.png?size=100" width="100px;" alt=""/><br />
+          <sub><b>Görkem Karyol</b></sub>
+        </a><br />
+        Full Stack Web & Server Infrastructure<br />
+        <i>(Frontend, Backend, IoT Support)</i>
+      </div>
     </td>
     <td align="center">
-      <a href="https://github.com/osnn96">
-        <img src="https://github.com/osnn96.png?size=100" width="100px;" alt=""/><br />
-        <sub><b>Osman Şener Gürel</b></sub>
-      </a><br />
-      Algorithm Design & IoT Systems<br />
-      <i>(Optimization Logic, Database, Hardware)</i>
+      <div align="center">
+        <a href="https://github.com/osnn96">
+          <img src="https://github.com/osnn96.png?size=100" width="100px;" alt=""/><br />
+          <sub><b>Osman Şener Gürel</b></sub>
+        </a><br />
+        Algorithm Design & IoT Systems<br />
+        <i>(Optimization Logic, Database, Hardware)</i>
+      </div>
     </td>
   </tr>
 </table>
+</div>
 
 <div align="center">
   <sub>Built with care by the WasteWise Team.</sub>
