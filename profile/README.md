@@ -1,9 +1,9 @@
 <div align="center">
   <h1>WasteWise</h1>
   <h3>Smart Waste Management System for Sustainable Cities</h3>
-  
+
   <p>
-    <b>Real-time IoT Monitoring</b> • <b>AI Route Optimization</b> • <b>ML Predictive Routing</b>
+    <b>Real-time Monitoring</b> • <b>AI Route Optimization</b> • <b>ML Predictive Routing</b>
   </p>
 
   <p>
@@ -13,8 +13,6 @@
     <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python" />
     <img src="https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi" alt="FastAPI" />
     <img src="https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL" />
-    <img src="https://img.shields.io/badge/MQTT-660066?style=for-the-badge&logo=mqtt&logoColor=white" alt="MQTT" />
-    <img src="https://img.shields.io/badge/C++-00599C?style=for-the-badge&logo=c%2B%2B&logoColor=white" alt="C++" />
   </p>
 </div>
 
@@ -22,36 +20,32 @@
 
 ## Project Overview
 
-**WasteWise** is a full-stack IoT-enabled waste management platform designed to replace static collection schedules with a dynamic, data-driven approach. Smart sensor nodes monitor bin fill levels in real-time, while an AI engine calculates the most efficient collection routes — reactively for today, and proactively for tomorrow using machine learning.
+**WasteWise** is a full-stack smart waste management platform that replaces static collection schedules with a dynamic, data-driven approach. Bin fill levels are tracked in real-time, and an AI engine calculates the most efficient collection routes — reactively for bins that are already critical, and proactively for bins predicted to overflow using machine learning.
 
 ### Key Objectives
-* **Monitor:** Real-time tracking of waste bin fill levels via ultrasonic sensors on ESP32 nodes.
-* **Optimize:** Capacitated Vehicle Routing Problem (CVRP) solver using Google OR-Tools.
-* **Predict:** Random Forest ML model that forecasts which bins will overflow in the next 24 hours.
-* **Sustain:** Reduce unnecessary trips, fuel consumption, and CO₂ emissions.
+- **Monitor:** Real-time bin fill levels managed through a live admin dashboard.
+- **Optimize:** Shortest collection paths solved with the Capacitated Vehicle Routing Problem (CVRP) using Google OR-Tools.
+- **Predict:** Random Forest ML model forecasts which bins will cross the critical threshold in the next 24 hours, enabling proactive dispatch before overflow.
+- **Sustain:** Fewer unnecessary trips means lower fuel consumption and CO₂ emissions.
 
 ---
 
 ## System Architecture
 
-WasteWise is a four-layer system where each layer has a dedicated service:
+WasteWise is a three-service system, each with a dedicated technology stack:
 
-| Layer | Tech Stack | Description |
+| Service | Tech Stack | Responsibility |
 | :--- | :--- | :--- |
-| **IoT Hardware** | `ESP32` `HC-SR04` `MQTT` `C++` | Sensor nodes measure fill levels and publish telemetry to the backend. |
-| **Frontend** | `React` `Vite` `TypeScript` `TailwindCSS` | Web dashboard with separate Admin and Driver views. |
-| **Backend** | `NestJS` `TypeScript` `Drizzle ORM` | REST API handling auth, bins, vehicles, routes, and algorithm orchestration. |
-| **Algorithm** | `FastAPI` `Python` `OR-Tools` `scikit-learn` | CVRP route solver and Random Forest predictive routing engine. |
-| **Database** | `Neon` `PostgreSQL` | Cloud-hosted relational database storing telemetry, bin states, and route history. |
-
-### How They Connect
+| **Frontend** | `React 19` `Vite` `TypeScript` `TailwindCSS` `TanStack Query` `TanStack Router` `Leaflet` | Web dashboard with Admin and Driver views |
+| **Backend** | `NestJS` `TypeScript` `Drizzle ORM` `Neon PostgreSQL` `Zod` `JWT` | REST API for auth, bins, vehicles, routes, and algorithm orchestration |
+| **Algorithm** | `FastAPI` `Python` `OR-Tools` `scikit-learn` `pandas` `psycopg2` | CVRP solver and Random Forest predictive routing engine |
 
 ```
-IoT Nodes  →  MQTT  →  Backend (NestJS)  →  Algorithm (FastAPI)
-                              ↕
-                         Database (Neon)
-                              ↕
-                       Frontend (React)
+Frontend (React)
+     ↕
+Backend (NestJS)  →  Algorithm (FastAPI)
+     ↕                     ↕
+  Database (Neon PostgreSQL)
 ```
 
 ---
@@ -59,55 +53,51 @@ IoT Nodes  →  MQTT  →  Backend (NestJS)  →  Algorithm (FastAPI)
 ## Core Features
 
 ### Reactive Route Generation
-Scans all bins with `fill_level ≥ 75%` and feeds them into a CVRP solver. Returns the shortest collection path respecting the vehicle's weight capacity.
+Fetches all bins with `fill_level ≥ 75%` and feeds them into the OR-Tools CVRP solver. A dynamic depot is placed at the average coordinate of all critical bins, and `PATH_CHEAPEST_ARC` finds the shortest collection sequence within the vehicle's weight capacity.
 
 ### Predictive ML Routing (+24h)
-A **Random Forest Regressor** trained on 90 days of synthetic historical data predicts each bin's fill level 24 hours ahead. Bins forecast to overflow are proactively added to the route before they become critical.
+A **Random Forest Regressor** is trained on 90 days of historical sensor data using features like `hour_of_day`, `day_of_week`, `is_weekend`, and `bin_id_encoded`. Given any time horizon, it predicts each bin's fill increase and proactively routes the truck to bins that will exceed 75% — before they become a problem.
+
+### Simulation Engine
+A `/simulate-next-day` endpoint adds 5–25% fill to all bins in one database transaction, allowing the system to be demoed from an empty state to a critical collection scenario in seconds.
 
 ### Admin Dashboard
-- Live bin map with color-coded fill status (green / amber / red)
-- Generate reactive or predictive routes and assign them to vehicles
-- Simulation panel to fast-forward time for demos
-- Manage bins, operator accounts, and routes
+- Live Leaflet map with color-coded bin status (green / amber / red)
+- Generate reactive or predictive routes and assign them to a vehicle
+- Simulation and safe-reset controls for demos
+- Full management of bins, operator accounts, and routes
 
 ### Driver Dashboard
 - View the active assigned route with ordered waypoints on a map
-- Mark collection stops as completed one by one
-- Track route progress and summary
+- Mark each collection stop as complete one by one
+- Track overall route progress and summary
 
 ---
 
 ## Repositories
 
-### [wastewise-backend](https://github.com/WasteWise-Group/wastewise-backend)
-> NestJS REST API — the central hub of the platform.
-> * **Auth:** JWT-based authentication with `ADMIN` and `DRIVER` roles.
-> * **Modules:** `bins`, `sensors`, `vehicles`, `routes`, `auth`.
-> * **Integration:** Orchestrates calls to the FastAPI algorithm service and validates responses with Zod.
+### [WasteWise](https://github.com/WasteWise-Project/WasteWise)
+> The main monorepo — all three services live here.
 
-### [wastewise-frontend](https://github.com/WasteWise-Group/wastewise-frontend)
-> React + Vite web dashboard for administrators and drivers.
-> * **Admin view:** Map surveillance, route generation, simulation, and account management.
-> * **Driver view:** Active route display, step-by-step collection completion.
-> * **Stack:** TanStack Query for data fetching, React Router for navigation, Leaflet for maps.
+**`wastewise-frontend`**
+React 19 + Vite dashboard for admins and drivers. Uses TanStack Query for server state, TanStack Router for navigation, and react-leaflet for interactive maps.
 
-### [wastewise-algorithm](https://github.com/WasteWise-Group/wastewise-algorithm)
-> FastAPI Python microservice — the intelligence layer.
-> * **CVRP:** Google OR-Tools solves the capacitated routing problem for critical bins.
-> * **ML:** scikit-learn Random Forest predicts future fill levels for proactive routing.
-> * **Simulation:** `/simulate-next-day` endpoint adds realistic fill increments for demos.
+**`wastewise-backend`**
+NestJS REST API with five modules: `auth`, `bins`, `sensors`, `vehicles`, and `routes`. Authenticates with JWT, uses Drizzle ORM against a Neon PostgreSQL database, and validates all algorithm responses with Zod before persisting.
 
-### [wastewise-hardware](https://github.com/WasteWise-Group/wastewise-hardware)
-> ESP32 firmware for the IoT sensor nodes.
-> * **Sensing:** HC-SR04 ultrasonic sensor calculates fill percentage from distance.
-> * **Comms:** MQTT client publishes telemetry to the `bins/telemetry` topic.
-> * **Power:** Deep sleep cycles conserve the 18650 Li-Ion battery between readings.
+**`wastewise-algorithm`**
+FastAPI Python microservice with three domains:
+- `/optimize-cvrp` — OR-Tools CVRP solver for currently critical bins
+- `/ml/predictive-cvrp` — Random Forest model predicts fill levels ahead and routes proactively
+- `/simulate-next-day` and `/reset-bins` — simulation controls for demos
 
-### [wastewise-docs](https://github.com/WasteWise-Group/wastewise-docs)
+---
+
+### [WasteWise-docs](https://github.com/WasteWise-Project/WasteWise-docs)
 > Project documentation and research.
-> * **Reports:** Graduation Project thesis and research papers on CVRP and smart waste systems.
-> * **Diagrams:** UML, circuit schematics (Fritzing), and system architecture diagrams.
-> * **Presentations:** Slide decks and project showcases.
+- Graduation Project thesis and research papers on CVRP and smart waste systems
+- UML, circuit schematics, and system architecture diagrams
+- Slide decks and project showcases
 
 ---
 
@@ -122,7 +112,7 @@ A **Random Forest Regressor** trained on 90 days of synthetic historical data pr
         <img src="https://github.com/glory42.png?size=100" width="100px;" alt=""/><br />
         <sub><b>Görkem Karyol</b></sub>
       </a><br />
-      Full Stack Web & Server Infrastructure <br />
+      Full Stack Web & Server Infrastructure<br />
       <i>(Frontend, Backend, IoT Support)</i>
     </td>
     <td align="center">
@@ -130,7 +120,7 @@ A **Random Forest Regressor** trained on 90 days of synthetic historical data pr
         <img src="https://github.com/osnn96.png?size=100" width="100px;" alt=""/><br />
         <sub><b>Osman Şener Gürel</b></sub>
       </a><br />
-      Algorithm Design & IoT Systems <br />
+      Algorithm Design & IoT Systems<br />
       <i>(Optimization Logic, Database, Hardware)</i>
     </td>
   </tr>
