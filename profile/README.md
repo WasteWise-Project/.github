@@ -79,13 +79,13 @@ A `/simulate-next-day` endpoint adds 5–25% fill to all bins in one database tr
 ### [WasteWise](https://github.com/WasteWise-Project/WasteWise)
 > The main monorepo — all three services live here.
 
-**`wastewise-frontend`**
+**`web`**
 React 19 + Vite dashboard for admins and drivers. Uses TanStack Query for server state, TanStack Router for navigation, and react-leaflet for interactive maps.
 
-**`wastewise-backend`**
+**`api`**
 NestJS REST API with five modules: `auth`, `bins`, `sensors`, `vehicles`, and `routes`. Authenticates with JWT, uses Drizzle ORM against a Neon PostgreSQL database, and validates all algorithm responses with Zod before persisting.
 
-**`wastewise-algorithm`**
+**`ml`**
 FastAPI Python microservice with three domains:
 - `/optimize-cvrp` — OR-Tools CVRP solver for currently critical bins
 - `/ml/predictive-cvrp` — Random Forest model predicts fill levels ahead and routes proactively
